@@ -13,5 +13,7 @@ public interface VoteRepo extends JpaRepository<Vote, Integer> {
     Optional<Vote> findByUserAndDebate(User user, Debate debate);
 
     List<Vote> findByDebate(Debate debate);
+
+    List<Vote> findByDebate_DebateId(int debateId);
 }
 

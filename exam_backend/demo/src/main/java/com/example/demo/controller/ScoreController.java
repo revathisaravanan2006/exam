@@ -2,27 +2,30 @@ package com.example.demo.controller;
 
 import com.example.demo.entities.Score;
 import com.example.demo.services.ScoreServices;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/scores")
 public class ScoreController {
 
-    private final ScoreServices scoreServices;
-
-    public ScoreController(ScoreServices scoreServices) {
-        this.scoreServices = scoreServices;
-    }
+    @Autowired
+    private ScoreServices scoreServices;
 
     @PostMapping
-    public Score createScore(
-            @RequestParam int userId,
-            @RequestParam int debateId,
-            @RequestParam double totalScore
-    ) {
-        return scoreServices.createScore(userId, debateId, totalScore);
+    public Score createScore(@RequestBody Map<String, Object> request) {
+        return scoreServices.createScore(
+                ((Number) request.get("userId")).intValue(),
+                ((Number) request.get("debateId")).intValue(),
+                ((Number) request.get("evaluatorId")).intValue(),
+                ((Number) request.get("clarity")).doubleValue(),
+                ((Number) request.get("logic")).doubleValue(),
+                ((Number) request.get("relevance")).doubleValue(),
+                ((Number) request.get("rebuttal")).doubleValue()
+        );
     }
 
     @GetMapping
@@ -43,6 +46,20 @@ public class ScoreController {
     @GetMapping("/user/{userId}")
     public List<Score> getScoresByUser(@PathVariable int userId) {
         return scoreServices.getScoresByUser(userId);
+    }
+
+    @PutMapping("/{id}")
+    public Score updateScore(@PathVariable int id, @RequestBody Map<String, Object> request) {
+        return scoreServices.updateScore(
+                id,
+                ((Number) request.get("userId")).intValue(),
+                ((Number) request.get("debateId")).intValue(),
+                ((Number) request.get("evaluatorId")).intValue(),
+                ((Number) request.get("clarity")).doubleValue(),
+                ((Number) request.get("logic")).doubleValue(),
+                ((Number) request.get("relevance")).doubleValue(),
+                ((Number) request.get("rebuttal")).doubleValue()
+        );
     }
 
     @DeleteMapping("/{id}")

@@ -10,10 +10,14 @@ import java.util.Optional;
 
 public interface ScoreRepo extends JpaRepository<Score, Integer> {
 
-    Optional<Score> findByUserAndDebate(User user, Debate debate);
+    Optional<Score> findByUserAndDebateAndEvaluator(User user, Debate debate, User evaluator);
 
     List<Score> findByDebate(Debate debate);
 
     List<Score> findByUser(User user);
+
+    List<Score> findByDebate_DebateId(int debateId);
+
+    List<Score> findByUser_UserId(int userId);
 }
 

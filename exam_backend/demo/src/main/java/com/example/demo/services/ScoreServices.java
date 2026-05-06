@@ -6,6 +6,7 @@ import com.example.demo.entities.User;
 import com.example.demo.repositories.DebateRepo;
 import com.example.demo.repositories.ScoreRepo;
 import com.example.demo.repositories.UserRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,31 +14,43 @@ import java.util.List;
 @Service
 public class ScoreServices {
 
-    private final ScoreRepo scoreRepo;
-    private final UserRepo userRepo;
-    private final DebateRepo debateRepo;
+    @Autowired
+    private ScoreRepo scoreRepo;
 
-    public ScoreServices(ScoreRepo scoreRepo, UserRepo userRepo, DebateRepo debateRepo) {
-        this.scoreRepo = scoreRepo;
-        this.userRepo = userRepo;
-        this.debateRepo = debateRepo;
-    }
+    @Autowired
+    private UserRepo userRepo;
 
-    public Score createScore(int userId, int debateId, double totalScore) {
+    @Autowired
+    private DebateRepo debateRepo;
+
+    public Score createScore(int userId, int debateId, int evaluatorId, double clarity, double logic, double relevance, double rebuttal) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
         Debate debate = debateRepo.findById(debateId)
                 .orElseThrow(() -> new IllegalArgumentException("Debate not found: " + debateId));
+        User evaluator = userRepo.findById(evaluatorId)
+                .orElseThrow(() -> new IllegalArgumentException("Evaluator not found: " + evaluatorId));
 
-        return scoreRepo.findByUserAndDebate(user, debate)
-                .map(existingScore -> {
-                    existingScore.setTotalScore(totalScore);
-                    return scoreRepo.save(existingScore);
+        double totalScore = (clarity + logic + relevance + rebuttal) / 4.0;
+
+        return scoreRepo.findByUserAndDebateAndEvaluator(user, debate, evaluator)
+                .map(existing -> {
+                    existing.setClarity(clarity);
+                    existing.setLogic(logic);
+                    existing.setRelevance(relevance);
+                    existing.setRebuttal(rebuttal);
+                    existing.setTotalScore(totalScore);
+                    return scoreRepo.save(existing);
                 })
                 .orElseGet(() -> {
                     Score score = new Score();
                     score.setUser(user);
                     score.setDebate(debate);
+                    score.setEvaluator(evaluator);
+                    score.setClarity(clarity);
+                    score.setLogic(logic);
+                    score.setRelevance(relevance);
+                    score.setRebuttal(rebuttal);
                     score.setTotalScore(totalScore);
                     return scoreRepo.save(score);
                 });
@@ -47,24 +60,40 @@ public class ScoreServices {
         return scoreRepo.findAll();
     }
 
-    public Score getScoreById(int scoreId) {
-        return scoreRepo.findById(scoreId)
-                .orElseThrow(() -> new IllegalArgumentException("Score not found: " + scoreId));
+    public Score getScoreById(int id) {
+        return scoreRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Score not found: " + id));
     }
 
-    public List<Score> getScoresByDebate(int debateId) {
-        Debate debate = debateRepo.findById(debateId)
-                .orElseThrow(() -> new IllegalArgumentException("Debate not found: " + debateId));
-        return scoreRepo.findByDebate(debate);
+    public List<Score> getScoresByDebate(int id) {
+        return scoreRepo.findByDebate_DebateId(id);
     }
 
-    public List<Score> getScoresByUser(int userId) {
+    public List<Score> getScoresByUser(int id) {
+        return scoreRepo.findByUser_UserId(id);
+    }
+
+    public Score updateScore(int id, int userId, int debateId, int evaluatorId, double clarity, double logic, double relevance, double rebuttal) {
+        Score existing = scoreRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Score not found: " + id));
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
-        return scoreRepo.findByUser(user);
+        Debate debate = debateRepo.findById(debateId)
+                .orElseThrow(() -> new IllegalArgumentException("Debate not found: " + debateId));
+        User evaluator = userRepo.findById(evaluatorId)
+                .orElseThrow(() -> new IllegalArgumentException("Evaluator not found: " + evaluatorId));
+
+        double totalScore = (clarity + logic + relevance + rebuttal) / 4.0;
+        existing.setUser(user);
+        existing.setDebate(debate);
+        existing.setEvaluator(evaluator);
+        existing.setClarity(clarity);
+        existing.setLogic(logic);
+        existing.setRelevance(relevance);
+        existing.setRebuttal(rebuttal);
+        existing.setTotalScore(totalScore);
+        return scoreRepo.save(existing);
     }
 
-    public void deleteScore(int scoreId) {
-        scoreRepo.deleteById(scoreId);
+    public void deleteScore(int id) {
+        scoreRepo.deleteById(id);
     }
 }

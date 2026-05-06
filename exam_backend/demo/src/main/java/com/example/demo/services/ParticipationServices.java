@@ -6,6 +6,7 @@ import com.example.demo.entities.User;
 import com.example.demo.repositories.DebateRepo;
 import com.example.demo.repositories.ParticipationRepo;
 import com.example.demo.repositories.UserRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,15 +14,14 @@ import java.util.List;
 @Service
 public class ParticipationServices {
 
-    private final ParticipationRepo participationRepo;
-    private final UserRepo userRepo;
-    private final DebateRepo debateRepo;
+    @Autowired
+    private ParticipationRepo participationRepo;
 
-    public ParticipationServices(ParticipationRepo participationRepo, UserRepo userRepo, DebateRepo debateRepo) {
-        this.participationRepo = participationRepo;
-        this.userRepo = userRepo;
-        this.debateRepo = debateRepo;
-    }
+    @Autowired
+    private UserRepo userRepo;
+
+    @Autowired
+    private DebateRepo debateRepo;
 
     public Participation createParticipation(int userId, int debateId, String speakingRole) {
         User user = userRepo.findById(userId)
@@ -40,12 +40,26 @@ public class ParticipationServices {
         return participationRepo.findAll();
     }
 
-    public Participation getParticipationById(int participationId) {
-        return participationRepo.findById(participationId)
-                .orElseThrow(() -> new IllegalArgumentException("Participation not found: " + participationId));
+    public Participation getParticipationById(int id) {
+        return participationRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Participation not found: " + id));
     }
 
-    public void deleteParticipation(int participationId) {
-        participationRepo.deleteById(participationId);
+    public Participation updateParticipation(int id, int userId, int debateId, String speakingRole) {
+        Participation existing = participationRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Participation not found: " + id));
+
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        Debate debate = debateRepo.findById(debateId)
+                .orElseThrow(() -> new IllegalArgumentException("Debate not found: " + debateId));
+
+        existing.setUser(user);
+        existing.setDebate(debate);
+        existing.setSpeakingRole(speakingRole);
+        return participationRepo.save(existing);
+    }
+
+    public void deleteParticipation(int id) {
+        participationRepo.deleteById(id);
     }
 }

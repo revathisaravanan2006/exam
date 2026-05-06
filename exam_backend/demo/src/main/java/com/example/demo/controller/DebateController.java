@@ -2,23 +2,27 @@ package com.example.demo.controller;
 
 import com.example.demo.entities.Debate;
 import com.example.demo.services.DebateServices;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/debates")
 public class DebateController {
 
-    private final DebateServices debateServices;
-
-    public DebateController(DebateServices debateServices) {
-        this.debateServices = debateServices;
-    }
+    @Autowired
+    private DebateServices debateServices;
 
     @PostMapping
-    public Debate createDebate(@RequestParam int userId, @RequestBody Debate debate) {
-        return debateServices.createDebate(debate, userId);
+    public Debate createDebate(@RequestBody Map<String, Object> request) {
+        return debateServices.createDebate(
+                ((Number) request.get("userId")).intValue(),
+                (String) request.get("topic"),
+                (String) request.get("date"),
+                (String) request.get("time")
+        );
     }
 
     @GetMapping
@@ -33,13 +37,11 @@ public class DebateController {
 
     @PutMapping("/{id}")
     public Debate updateDebate(@PathVariable int id, @RequestBody Debate debate) {
-        debate.setDebateId(id);
-        return debateServices.updateDebate(debate);
+        return debateServices.updateDebate(id, debate);
     }
 
     @DeleteMapping("/{id}")
     public void deleteDebate(@PathVariable int id) {
         debateServices.deleteDebate(id);
     }
-    
 }

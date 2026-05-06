@@ -2,20 +2,22 @@ package com.example.demo.services;
 
 import com.example.demo.entities.User;
 import com.example.demo.repositories.UserRepo;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
 public class UserServices {
 
-    private final UserRepo userRepo;
+    @Autowired
+    private UserRepo userRepo;
 
-    public UserServices(UserRepo userRepo) {
-        this.userRepo = userRepo;
-    }
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public User createUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepo.save(user);
     }
 
@@ -23,19 +25,22 @@ public class UserServices {
         return userRepo.findAll();
     }
 
-    public User getUserById(int userId) {
-        return userRepo.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+    public User getUserById(int id) {
+        return userRepo.findById(id).orElseThrow();
     }
 
     public User updateUser(User user) {
-        if (!userRepo.existsById(user.getUserId())) {
-            throw new IllegalArgumentException("User not found: " + user.getUserId());
+        User existing = userRepo.findById(user.getUserId()).orElseThrow();
+        existing.setName(user.getName());
+        existing.setEmail(user.getEmail());
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            existing.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        return userRepo.save(user);
+        existing.setRole(user.getRole());
+        return userRepo.save(existing);
     }
 
-    public void deleteUser(int userId) {
-        userRepo.deleteById(userId);
+    public void deleteUser(int id) {
+        userRepo.deleteById(id);
     }
 }

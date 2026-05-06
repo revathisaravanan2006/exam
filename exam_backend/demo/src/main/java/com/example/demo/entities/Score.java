@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "debate_id"}))
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "debate_id", "evaluator_id"}))
 @Data
 public class Score {
 
@@ -12,6 +12,10 @@ public class Score {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int scoreId;
 
+    private double clarity;
+    private double logic;
+    private double relevance;
+    private double rebuttal;
     private double totalScore;
 
     @ManyToOne
@@ -22,35 +26,7 @@ public class Score {
     @JoinColumn(name = "debate_id")
     private Debate debate;
 
-    public int getScoreId() {
-        return scoreId;
-    }
-
-    public void setScoreId(int scoreId) {
-        this.scoreId = scoreId;
-    }
-
-    public double getTotalScore() {
-        return totalScore;
-    }
-
-    public void setTotalScore(double totalScore) {
-        this.totalScore = totalScore;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Debate getDebate() {
-        return debate;
-    }
-
-    public void setDebate(Debate debate) {
-        this.debate = debate;
-    }
+    @ManyToOne
+    @JoinColumn(name = "evaluator_id")
+    private User evaluator;
 }

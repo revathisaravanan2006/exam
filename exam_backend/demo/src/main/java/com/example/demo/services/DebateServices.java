@@ -4,6 +4,7 @@ import com.example.demo.entities.Debate;
 import com.example.demo.entities.User;
 import com.example.demo.repositories.DebateRepo;
 import com.example.demo.repositories.UserRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,17 +12,20 @@ import java.util.List;
 @Service
 public class DebateServices {
 
-    private final DebateRepo debateRepo;
-    private final UserRepo userRepo;
+    @Autowired
+    private DebateRepo debateRepo;
 
-    public DebateServices(DebateRepo debateRepo, UserRepo userRepo) {
-        this.debateRepo = debateRepo;
-        this.userRepo = userRepo;
-    }
+    @Autowired
+    private UserRepo userRepo;
 
-    public Debate createDebate(Debate debate, int userId) {
+    public Debate createDebate(int userId, String topic, String date, String time) {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+        Debate debate = new Debate();
+        debate.setTopic(topic);
+        debate.setDate(date);
+        debate.setTime(time);
         debate.setUser(user);
         return debateRepo.save(debate);
     }
@@ -30,19 +34,22 @@ public class DebateServices {
         return debateRepo.findAll();
     }
 
-    public Debate getDebateById(int debateId) {
-        return debateRepo.findById(debateId)
-                .orElseThrow(() -> new IllegalArgumentException("Debate not found: " + debateId));
+    public Debate getDebateById(int id) {
+        return debateRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Debate not found: " + id));
     }
 
-    public Debate updateDebate(Debate debate) {
-        if (!debateRepo.existsById(debate.getDebateId())) {
-            throw new IllegalArgumentException("Debate not found: " + debate.getDebateId());
+    public Debate updateDebate(int id, Debate debate) {
+        Debate existing = debateRepo.findById(id).orElseThrow(() -> new IllegalArgumentException("Debate not found: " + id));
+        existing.setTopic(debate.getTopic());
+        existing.setDate(debate.getDate());
+        existing.setTime(debate.getTime());
+        if (debate.getUser() != null) {
+            existing.setUser(debate.getUser());
         }
-        return debateRepo.save(debate);
+        return debateRepo.save(existing);
     }
 
-    public void deleteDebate(int debateId) {
-        debateRepo.deleteById(debateId);
+    public void deleteDebate(int id) {
+        debateRepo.deleteById(id);
     }
 }

@@ -2,7 +2,6 @@ package com.example.demo.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import java.util.List;
 
 @Entity
 @Data
@@ -19,13 +18,4 @@ public class Debate {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    @OneToMany(mappedBy = "debate")
-    private List<Participation> participations;
-
-    @OneToMany(mappedBy = "debate")
-    private List<Vote> votes;
-
-    @OneToMany(mappedBy = "debate")
-    private List<Score> scores;
 }

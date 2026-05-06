@@ -21,5 +21,4 @@ public class Vote {
     @ManyToOne
     @JoinColumn(name = "debate_id")
     private Debate debate;
-
 }
